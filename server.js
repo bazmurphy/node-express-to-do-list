@@ -19,19 +19,22 @@ app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+app.get('/', async (request, response) => {
 
-app.get('/',async (request, response)=>{
-    const todoItems = await db.collection('to-do-list-collection').find().toArray()
-    const itemsLeft = await db.collection('to-do-list-collection').countDocuments({completed: false})
-    response.render('index.ejs', { items: todoItems, left: itemsLeft })
-    // db.collection('to-do-list-collection').find().toArray()
-    // .then(data => {
-    //     db.collection('to-do-list-collection').countDocuments({completed: false})
-    //     .then(itemsLeft => {
-    //         response.render('index.ejs', { items: data, left: itemsLeft })
-    //     })
-    // })
-    // .catch(error => console.error(error))
+    // [1] async way of doing it:
+    // const todoItems = await db.collection('to-do-list-collection').find().toArray()
+    // const itemsLeft = await db.collection('to-do-list-collection').countDocuments({completed: false})
+    // response.render('index.ejs', { items: todoItems, left: itemsLeft })
+
+    // [2] promise chain way of doing it:
+    db.collection('to-do-list-collection').find().toArray()
+    .then(data => {
+        db.collection('to-do-list-collection').countDocuments({completed: false})
+        .then(itemsLeft => {
+            response.render('index.ejs', { items: data, left: itemsLeft })
+        })
+    })
+    .catch(error => console.error(error))
 });
 
 app.post('/addTodo', (request, response) => {
@@ -84,6 +87,6 @@ app.delete('/deleteItem', (request, response) => {
     .catch(error => console.error(error))
 });
 
-app.listen(process.env.PORT || PORT, ()=>{
+app.listen(process.env.PORT || PORT, () => {
     console.log(`Server running on port ${PORT}`)
 });
